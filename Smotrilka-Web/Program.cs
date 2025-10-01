@@ -9,6 +9,11 @@ namespace Smotrilka_Web
             // Add services to the container.
             builder.Services.AddRazorPages();
 
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                builder.Configuration.GetSection("Kestrel").Bind(options);
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

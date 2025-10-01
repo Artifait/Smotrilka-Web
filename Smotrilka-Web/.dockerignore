@@ -1,0 +1,17 @@
+# Системные и IDE файлы
+.git
+.gitignore
+.vs
+*.user
+*.suo
+
+# Артефакты сборки
+bin/
+obj/
+
+# Логи и кеши
+*.log
+*.tmp
+
+
+Dockerfile
