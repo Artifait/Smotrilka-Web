@@ -1,0 +1,27 @@
+﻿@page
+@model AddLinkModel
+<form method="post">
+    <h2 style="text-align: center; margin-bottom: 2rem;">Add New Link</h2>
+    <input type="hidden" asp-for="LinkRequest.Login" />
+    <input type="hidden" asp-for="LinkRequest.Password" />
+
+    <div>
+        <label>Name:</label>
+        <input asp-for="LinkRequest.Name" />
+        <span asp-validation-for="LinkRequest.Name"></span>
+    </div>
+
+    <div>
+        <label>Type:</label>
+        <input asp-for="LinkRequest.Type" />
+        <span asp-validation-for="LinkRequest.Type"></span>
+    </div>
+
+    <div>
+        <label>Link:</label>
+        <input asp-for="LinkRequest.Link" />
+        <span asp-validation-for="LinkRequest.Link"></span>
+    </div>
+
+    <button type="submit" style="width: 100%;">Add Link</button>
+</form>

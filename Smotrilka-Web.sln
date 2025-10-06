@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Smotrilka-Web", "Smotrilka-Web\Smotrilka-Web.csproj", "{4BAE3C43-D805-4E2B-AC44-F33938112978}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smotrilka-Web", "Smotrilka-Web\Smotrilka-Web.csproj", "{4BAE3C43-D805-4E2B-AC44-F33938112978}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решения", "Элементы решения", "{E7A17207-93A0-4407-AD96-8CC40DA42A9B}"
 	ProjectSection(SolutionItems) = preProject
@@ -23,5 +23,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {74C24D16-8135-40E0-95D3-647325E46BC3}
 	EndGlobalSection
 EndGlobal

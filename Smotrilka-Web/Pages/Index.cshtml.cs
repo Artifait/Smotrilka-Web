@@ -1,20 +1,22 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Smotrilka_Web.Services;
 
 namespace Smotrilka_Web.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly ILogger<IndexModel> _logger;
+        private readonly BackendService _backendService;
 
-        public IndexModel(ILogger<IndexModel> logger)
+        public IndexModel(BackendService backendService)
         {
-            _logger = logger;
+            _backendService = backendService;
         }
+
+        public string CurrentUser { get; set; }
 
         public void OnGet()
         {
-
+            CurrentUser = Request.Cookies["CurrentUser"];
         }
     }
 }

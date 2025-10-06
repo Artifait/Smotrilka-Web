@@ -1,32 +1,25 @@
+using Smotrilka_Web.Services;
+
 namespace Smotrilka_Web
 {
     public class Program
     {
         public static void Main(string[] args)
         {
+
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddRazorPages();
-
-            builder.WebHost.ConfigureKestrel(options =>
+            builder.Services.AddHttpClient<BackendService>(client =>
             {
-                builder.Configuration.GetSection("Kestrel").Bind(options);
+                client.BaseAddress = new Uri("http://158.160.120.54:9090");
+                //client.BaseAddress = new Uri("http://127.0.0.1:9090");
             });
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (!app.Environment.IsDevelopment())
-            {
-                app.UseExceptionHandler("/Error");
-            }
             app.UseStaticFiles();
-
             app.UseRouting();
-
-            app.UseAuthorization();
-
             app.MapRazorPages();
 
             app.Run();
