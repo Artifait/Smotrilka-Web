@@ -1,9 +1,162 @@
 ﻿@page
 @model IndexModel
-<div>
-    <h1 style="text-align: center; color: #ecf0f1;">Search Links</h1>
-    <form method="get" class="search-form">
-        <input type="text" name="search" placeholder="Search links..." />
-        <button type="submit">Search</button>
-    </form>
+@{
+    ViewData["Title"] = "Smart Search";
+}
+
+<link rel="stylesheet" href="~/css/search.css" asp-append-version="true" />
+
+<div class="search-hero">
+    <div class="container">
+        <h1 class="search-title">Find Your Resources</h1>
+        <p class="search-subtitle">Discover the best links and resources with our powerful search</p>
+
+        <form method="get" class="search-form" id="searchForm">
+            <div class="search-input-group">
+                <input type="text"
+                       asp-for="Q"
+                       class="search-input"
+                       placeholder="What are you looking for?"
+                       autocomplete="off"
+                       autofocus />
+                <button type="submit" class="search-button" id="searchButton">
+                    <span class="button-text">Search</span>
+                    <div class="search-spinner" id="searchSpinner">
+                        <div class="spinner"></div>
+                    </div>
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
+
+<div class="search-results-section">
+    <div class="container">
+        @if (Model.IsSearching)
+        {
+            <div class="search-loading" id="searchLoading">
+                <div class="loading-content">
+                    <div class="pulse-loader">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <p>Searching through our database...</p>
+                </div>
+            </div>
+        }
+
+        @if (Model.SearchError)
+        {
+            <div class="search-error">
+                <div class="error-icon">⚠️</div>
+                <h3>Search temporarily unavailable</h3>
+                <p>Please try again in a few moments</p>
+                <button onclick="location.reload()" class="retry-button">Retry Search</button>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(Model.Q))
+        {
+            <div class="results-header">
+                <h2>Search Results for "@Model.Q"</h2>
+                <div class="results-count">Found @Model.SearchResults.Count results</div>
+            </div>
+
+            <div class="search-results" id="searchResults">
+                @if (Model.SearchResults.Any())
+                {
+                    @foreach (var item in Model.SearchResults)
+                    {
+                        <div class="result-card" data-rating="@item.Rating">
+                            <div class="result-header">
+                                <h3 class="result-title">
+                                    <a href="@item.Link" target="_blank" rel="noopener noreferrer" class="result-link">
+                                        @item.Name
+                                        <svg class="external-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z" />
+                                        </svg>
+                                    </a>
+                                </h3>
+                                <div class="rating-badge">
+                                    <span class="rating-star">★</span>
+                                    <span class="rating-value">@item.Rating</span>
+                                </div>
+                            </div>
+                            <div class="result-url">@item.Link</div>
+                            @if (item.Tags?.Any() == true)
+                            {
+                                <div class="tags-container">
+                                    @foreach (var tag in item.Tags)
+                                    {
+                                        <span class="tag">@tag</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+                else if (!Model.IsSearching)
+                {
+                    <div class="no-results">
+                        <div class="no-results-icon">🔍</div>
+                        <h3>No results found for "@Model.Q"</h3>
+                        <p>Try adjusting your search terms or browse different categories</p>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="welcome-message">
+                <div class="welcome-icon">🚀</div>
+                <h2>Ready to explore?</h2>
+                <p>Enter your search query above to discover amazing resources</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchForm = document.getElementById('searchForm');
+            const searchButton = document.getElementById('searchButton');
+            const searchInput = document.querySelector('.search-input');
+
+            // Auto-focus
+            if (searchInput && !searchInput.value) {
+                searchInput.focus();
+            }
+
+            // Loading state
+            if (searchForm) {
+                searchForm.addEventListener('submit', function() {
+                    const query = searchInput.value.trim();
+                    if (query) {
+                        searchButton.classList.add('searching');
+                        searchButton.disabled = true;
+
+                        // Показываем анимацию загрузки минимум 500ms для плавности
+                        setTimeout(() => {
+                            if (searchButton.classList.contains('searching')) {
+                                searchButton.classList.remove('searching');
+                                searchButton.disabled = false;
+                            }
+                        }, 500);
+                    }
+                });
+            }
+
+            // Анимация появления результатов
+            const animateResults = () => {
+                const cards = document.querySelectorAll('.result-card');
+                cards.forEach((card, index) => {
+                    card.style.animationDelay = `${index * 0.1}s`;
+                });
+            };
+
+            // Запускаем анимацию при загрузке и после поиска
+            animateResults();
+        });
+    </script>
+}

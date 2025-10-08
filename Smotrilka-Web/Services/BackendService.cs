@@ -28,5 +28,29 @@ namespace Smotrilka_Web.Services
             var response = await _httpClient.PostAsJsonAsync("/react", request);
             return await response.Content.ReadAsStringAsync();
         }
+
+        public async Task<List<SearchResponse>> SearchLinksAsync(string query)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"/search?q={Uri.EscapeDataString(query)}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<List<SearchResponse>>()
+                           ?? new List<SearchResponse>();
+                }
+
+                // Логирование ошибки или возврат пустого списка
+                Console.WriteLine($"Search error: {response.StatusCode}");
+                return new List<SearchResponse>();
+            }
+            catch (Exception ex)
+            {
+                // Логирование исключения
+                Console.WriteLine($"Search exception: {ex.Message}");
+                return new List<SearchResponse>();
+            }
+        }
     }
 }

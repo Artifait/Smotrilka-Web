@@ -19,5 +19,6 @@ namespace Smotrilka_Web.Models
 
         [Required(ErrorMessage = "Ссылка обязательна")]
         public string Link { get; set; }
+        public List<string> Tags { get; internal set; }
     }
 }
