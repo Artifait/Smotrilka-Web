@@ -152,9 +152,13 @@
                 @if (ViewContext.HttpContext.Request.Cookies["CurrentUser"] != null)
                 {
                     <span class="welcome-text">Welcome, @ViewContext.HttpContext.Request.Cookies["CurrentUser"]!</span>
-                    <form method="post" action="/Logout" style="margin: 0;">
-                        <button type="submit" class="logout-btn">Logout</button>
-                    </form>
+                    <button onclick="redirectToPage()">Logout</button>
+
+                    <script>
+                        function redirectToPage() {
+                            window.location.href = "http://localhost:10000/Logout"; // Замените на нужный URL
+                        }
+                    </script>
                 }
                 else
                 {
