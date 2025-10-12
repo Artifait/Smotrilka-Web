@@ -1,16 +1,33 @@
 ﻿@page
-@model LoginModel
-<form method="post">
-    <h2 style="text-align: center; margin-bottom: 2rem;">Login</h2>
-    <div>
-        <label>Login:</label>
-        <input asp-for="LoginRequest.Login" />
-        <span asp-validation-for="LoginRequest.Login"></span>
+@model Smotrilka_Web.Pages.LoginModel
+@{
+    ViewData["Title"] = "Вход";
+}
+
+<div class="auth-container">
+    <div class="auth-card">
+        <h2>Вход в аккаунт</h2>
+
+        <form method="post">
+            <div class="form-group">
+                <label for="login">Логин</label>
+                <input type="text" id="login" name="Login" class="form-control" required />
+                @if (!string.IsNullOrEmpty(Model.LoginError))
+                {
+                    <span class="error-message">@Model.LoginError</span>
+                }
+            </div>
+
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="Password" class="form-control" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Войти</button>
+        </form>
+
+        <div class="auth-links">
+            <a href="/Register">Нет аккаунта? Зарегистрируйтесь</a>
+        </div>
     </div>
-    <div>
-        <label>Password:</label>
-        <input type="password" asp-for="LoginRequest.Password" />
-        <span asp-validation-for="LoginRequest.Password"></span>
-    </div>
-    <button type="submit" style="width: 100%;">Login</button>
-</form>
+</div>

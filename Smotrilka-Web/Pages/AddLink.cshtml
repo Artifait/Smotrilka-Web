@@ -1,27 +1,72 @@
 ﻿@page
-@model AddLinkModel
-<form method="post">
-    <h2 style="text-align: center; margin-bottom: 2rem;">Add New Link</h2>
-    <input type="hidden" asp-for="LinkRequest.Login" />
-    <input type="hidden" asp-for="LinkRequest.Password" />
+@model Smotrilka_Web.Pages.AddLinkModel
+@{
+    ViewData["Title"] = "Добавить ссылку";
+}
 
-    <div>
-        <label>Name:</label>
-        <input asp-for="LinkRequest.Name" />
-        <span asp-validation-for="LinkRequest.Name"></span>
-    </div>
+<div class="container">
+    <h2>Добавить образовательную ссылку</h2>
 
-    <div>
-        <label>Type:</label>
-        <input asp-for="LinkRequest.Type" />
-        <span asp-validation-for="LinkRequest.Type"></span>
-    </div>
+    <form method="post" id="addLinkForm">
+        <div class="form-group">
+            <label for="name">Название</label>
+            <input type="text" id="name" name="Name" class="form-control" required />
+            <span class="error-message" id="nameError"></span>
+        </div>
 
-    <div>
-        <label>Link:</label>
-        <input asp-for="LinkRequest.Link" />
-        <span asp-validation-for="LinkRequest.Link"></span>
-    </div>
+        <div class="form-group">
+            <label for="link">Ссылка</label>
+            <input type="url" id="link" name="Link" class="form-control" required />
+            <span class="error-message" id="linkError"></span>
+        </div>
 
-    <button type="submit" style="width: 100%;">Add Link</button>
-</form>
+        <div class="form-group">
+            <label for="tags">Теги (через запятую)</label>
+            <input type="text" id="tags" name="Tags" class="form-control" />
+            <span class="error-message" id="tagsError"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Описание (Markdown)</label>
+            <textarea id="description" name="Description" class="form-control markdown-editor"></textarea>
+            <div id="descriptionPreview" class="markdown-preview"></div>
+        </div>
+
+        <div class="stickers-section">
+            <h3>Стикеры</h3>
+
+            <div class="sticker-form">
+                <select id="stickerType" class="form-control">
+                    <option value="author">Автор курса</option>
+                    <option value="language">Язык курса</option>
+                </select>
+
+                <div id="authorSticker" class="sticker-fields">
+                    <input type="text" id="author" placeholder="Имя автора" class="form-control" />
+                </div>
+
+                <div id="languageSticker" class="sticker-fields" style="display: none;">
+                    <input type="text" id="language" placeholder="Язык" class="form-control" />
+                    <label>
+                        <input type="checkbox" id="isMachineTranslated" />
+                        Машинный перевод
+                    </label>
+                    <input type="text" id="originalLanguage" placeholder="Оригинальный язык" class="form-control" />
+                    <input type="date" id="exactDate" class="form-control" />
+                </div>
+
+                <button type="button" id="addSticker" class="btn btn-secondary">Добавить стикер</button>
+            </div>
+
+            <div id="stickersList" class="stickers-list"></div>
+            <input type="hidden" id="stickersJson" name="StickersJson" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Добавить ссылку</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/js/markdown-editor.js"></script>
+    <script src="~/js/add-link.js"></script>
+}

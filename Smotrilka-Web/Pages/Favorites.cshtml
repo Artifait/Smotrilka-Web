@@ -1,0 +1,80 @@
+﻿@page
+@model Smotrilka_Web.Pages.FavoritesModel
+@{
+    ViewData["Title"] = "Избранное";
+}
+
+<div class="container">
+    <h2>Мои избранные ссылки</h2>
+
+    @if (Model.ErrorMessage != null)
+    {
+        <div class="error-message">@Model.ErrorMessage</div>
+    }
+
+    <div class="search-results" id="favoritesResults">
+        @if (Model.Favorites != null && Model.Favorites.Any())
+        {
+            @foreach (var link in Model.Favorites)
+            {
+                <div class="link-card">
+                    <h3><a href="/Link?id=@link.Id">@link.Name</a></h3>
+                    <div class="stickers-container">
+                        @foreach (var tag in link.Tags)
+                        {
+                            <span class="sticker">@tag</span>
+                        }
+                    </div>
+                    <div class="rating">Рейтинг: @link.Rating</div>
+                    <a href="@link.Link" target="_blank" class="btn btn-secondary">Перейти к контенту</a>
+                    <button class="btn btn-danger remove-favorite" data-link-id="@link.Id">Удалить из избранного</button>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="no-results">
+                <p>У вас пока нет избранных ссылок</p>
+                <a href="/" class="btn btn-primary">Найти интересные материалы</a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Удаление из избранного
+            document.querySelectorAll('.remove-favorite').forEach(button => {
+                button.addEventListener('click', async function() {
+                    const linkId = this.dataset.linkId;
+
+                    try {
+                        const response = await fetch(`/favorites/remove?linkId=${linkId}`, {
+                            method: 'DELETE'
+                        });
+
+                        if (response.ok) {
+                            this.closest('.link-card').remove();
+
+                            // Если не осталось ссылок, показываем сообщение
+                            if (!document.querySelector('.link-card')) {
+                                document.getElementById('favoritesResults').innerHTML = `
+                                    <div class="no-results">
+                                        <p>У вас пока нет избранных ссылок</p>
+                                        <a href="/" class="btn btn-primary">Найти интересные материалы</a>
+                                    </div>
+                                `;
+                            }
+                        } else {
+                            alert('Ошибка при удалении из избранного');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Ошибка при удалении из избранного');
+                    }
+                });
+            });
+        });
+    </script>
+}

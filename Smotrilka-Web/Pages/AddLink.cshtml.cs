@@ -7,45 +7,96 @@ namespace Smotrilka_Web.Pages
 {
     public class AddLinkModel : PageModel
     {
-        private readonly BackendService _backendService;
+        private readonly ApiService _apiService;
+        private readonly StickerService _stickerService;
 
-        public AddLinkModel(BackendService backendService)
+        public AddLinkModel(ApiService apiService, StickerService stickerService)
         {
-            _backendService = backendService;
+            _apiService = apiService;
+            _stickerService = stickerService;
         }
 
         [BindProperty]
-        public LinkRequest LinkRequest { get; set; }
+        public string Name { get; set; }
 
-        public string CurrentUser { get; set; }
+        [BindProperty]
+        public string Link { get; set; }
+
+        [BindProperty]
+        public string Tags { get; set; }
+
+        [BindProperty]
+        public string Description { get; set; }
+
+        [BindProperty]
+        public string StickersJson { get; set; }
+
+        public string ErrorMessage { get; set; }
+        public string SuccessMessage { get; set; }
 
         public void OnGet()
         {
-            CurrentUser = Request.Cookies["CurrentUser"];
-            LinkRequest = new LinkRequest
+            if (!IsUserAuthenticated())
             {
-                Login = Request.Cookies["UserLogin"],
-                Password = Request.Cookies["UserPassword"]
-            };
+                Response.Redirect("/Login");
+            }
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid)
+            if (!IsUserAuthenticated())
             {
+                return RedirectToPage("/Login");
+            }
+
+            if (string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(Link))
+            {
+                ErrorMessage = "Название и ссылка обязательны для заполнения";
                 return Page();
             }
 
-            var success = await _backendService.AddLinkAsync(LinkRequest);
-
-            if (success)
+            try
             {
-                return RedirectToPage("/Index");
+                var linkRequest = new LinkRequest
+                {
+                    Name = Name,
+                    Link = Link,
+                    Description = Description ?? "",
+                    Tags = Tags?.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                              .Select(t => t.Trim())
+                              .ToList() ?? new List<string>()
+                };
+
+                var success = await _apiService.AddLinkAsync(linkRequest);
+
+                if (success)
+                {
+                    SuccessMessage = "Ссылка успешно добавлена!";
+                    // Очищаем форму
+                    Name = string.Empty;
+                    Link = string.Empty;
+                    Tags = string.Empty;
+                    Description = string.Empty;
+                    StickersJson = string.Empty;
+
+                    ModelState.Clear();
+                }
+                else
+                {
+                    ErrorMessage = "Ошибка при добавлении ссылки. Проверьте введенные данные.";
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Произошла ошибка: {ex.Message}";
             }
 
-            ModelState.AddModelError(string.Empty, "Failed to add link");
             return Page();
         }
-    }
 
+        private bool IsUserAuthenticated()
+        {
+            return Request.Cookies.ContainsKey("userLogin") && Request.Cookies.ContainsKey("userPassword");
+        }
+    }
 }

@@ -1,51 +1,47 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Smotrilka_Web.Models;
 using Smotrilka_Web.Services;
 
 namespace Smotrilka_Web.Pages
 {
     public class LoginModel : PageModel
     {
-        private readonly BackendService _backendService;
+        private readonly ApiService _apiService;
 
-        public LoginModel(BackendService backendService)
+        public LoginModel(ApiService apiService)
         {
-            _backendService = backendService;
+            _apiService = apiService;
         }
 
         [BindProperty]
-        public RegisterRequest LoginRequest { get; set; }
+        public string Login { get; set; }
 
-        public void OnGet() { }
+        [BindProperty]
+        public string Password { get; set; }
+
+        public string LoginError { get; set; }
+
+        public void OnGet()
+        {
+        }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid)
+            if (string.IsNullOrEmpty(Login) || string.IsNullOrEmpty(Password))
             {
+                LoginError = "Заполните все поля";
                 return Page();
             }
 
-            var testRequest = new LinkRequest
-            {
-                Login = LoginRequest.Login,
-                Password = LoginRequest.Password,
-                Name = "test",
-                Type = "test",
-                Link = "http://test.com"
-            };
-
-            var success = await _backendService.AddLinkAsync(testRequest);
-
+            var success = await _apiService.LoginAsync(Login, Password);
             if (success)
             {
-                Response.Cookies.Append("CurrentUser", LoginRequest.Login);
-                Response.Cookies.Append("UserLogin", LoginRequest.Login);
-                Response.Cookies.Append("UserPassword", LoginRequest.Password);
+                Response.Cookies.Append("userLogin", Login);
+                Response.Cookies.Append("userPassword", Password);
                 return RedirectToPage("/Index");
             }
 
-            ModelState.AddModelError(string.Empty, "Invalid login or password");
+            LoginError = "Неверный логин или пароль";
             return Page();
         }
     }

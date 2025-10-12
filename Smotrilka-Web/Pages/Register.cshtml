@@ -1,16 +1,42 @@
 ﻿@page
-@model RegisterModel
-<form method="post">
-    <h2 style="text-align: center; margin-bottom: 2rem;">Register</h2>
-    <div>
-        <label>Login:</label>
-        <input asp-for="RegisterRequest.Login" />
-        <span asp-validation-for="RegisterRequest.Login"></span>
+@model Smotrilka_Web.Pages.RegisterModel
+@{
+    ViewData["Title"] = "Регистрация";
+}
+
+<div class="auth-container">
+    <div class="auth-card">
+        <h2>Регистрация</h2>
+
+        <form method="post">
+            <div class="form-group">
+                <label for="login">Логин</label>
+                <input type="text" id="login" name="Login" class="form-control" required />
+                @if (!string.IsNullOrEmpty(Model.LoginError))
+                {
+                        <span class="error-message">@Model.LoginError</span>
+                }
+            </div>
+
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="Password" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Подтверждение пароля</label>
+                <input type="password" id="confirmPassword" name="ConfirmPassword" class="form-control" required />
+                @if (!string.IsNullOrEmpty(Model.PasswordError))
+                {
+                        <span class="error-message">@Model.PasswordError</span>
+                }
+            </div>
+
+            <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+        </form>
+
+        <div class="auth-links">
+            <a href="/Login">Уже есть аккаунт? Войдите</a>
+        </div>
     </div>
-    <div>
-        <label>Password:</label>
-        <input type="password" asp-for="RegisterRequest.Password" />
-        <span asp-validation-for="RegisterRequest.Password"></span>
-    </div>
-    <button type="submit" style="width: 100%;">Register</button>
-</form>
+</div>

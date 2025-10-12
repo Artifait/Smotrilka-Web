@@ -1,42 +1,58 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Smotrilka_Web.Services;
-using Smotrilka_Web.Models;
 
 namespace Smotrilka_Web.Pages
 {
     public class RegisterModel : PageModel
     {
-        private readonly BackendService _backendService;
+        private readonly ApiService _apiService;
 
-        public RegisterModel(BackendService backendService)
+        public RegisterModel(ApiService apiService)
         {
-            _backendService = backendService;
+            _apiService = apiService;
         }
 
         [BindProperty]
-        public RegisterRequest RegisterRequest { get; set; }
+        public string Login { get; set; }
 
-        public void OnGet() { }
+        [BindProperty]
+        public string Password { get; set; }
+
+        [BindProperty]
+        public string ConfirmPassword { get; set; }
+
+        public string LoginError { get; set; }
+        public string PasswordError { get; set; }
+
+        public void OnGet()
+        {
+        }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid)
+            if (Password != ConfirmPassword)
             {
+                PasswordError = "Пароли не совпадают";
                 return Page();
             }
 
-            var success = await _backendService.RegisterAsync(RegisterRequest);
+            var request = new Models.RegisterRequest
+            {
+                Login = Login,
+                Password = Password,
+                ConfirmPassword = ConfirmPassword
+            };
 
+            var success = await _apiService.RegisterAsync(request);
             if (success)
             {
-                Response.Cookies.Append("CurrentUser", RegisterRequest.Login);
-                Response.Cookies.Append("UserLogin", RegisterRequest.Login);
-                Response.Cookies.Append("UserPassword", RegisterRequest.Password);
+                Response.Cookies.Append("userLogin", Login);
+                Response.Cookies.Append("userPassword", Password);
                 return RedirectToPage("/Index");
             }
 
-            ModelState.AddModelError(string.Empty, "Registration failed");
+            LoginError = "Пользователь с таким логином уже существует";
             return Page();
         }
     }
