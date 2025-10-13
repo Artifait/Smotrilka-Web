@@ -77,6 +77,7 @@ namespace Smotrilka_Web.Services
                 {
                     Login = login,
                     Password = password,
+                    Description = request.Description,
                     Name = request.Name,
                     Link = request.Link,
                     Tags = request.Tags
@@ -137,6 +138,91 @@ namespace Smotrilka_Web.Services
             {
                 return false;
             }
+        }
+        public async Task<LinkFullInfo> GetFullLinkInfoAsync(int linkId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"/link/full?linkId={linkId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonSerializer.Deserialize<LinkFullInfo>(json);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting full link info: {ex.Message}");
+            }
+            return null;
+        }
+
+        public async Task<bool> AddCommentAsync(AddCommentRequest request)
+        {
+            try
+            {
+                var (login, password) = GetCredentials();
+                var commentRequest = new CommentRequest
+                {
+                    Login = login,
+                    Password = password,
+                    LinkId = request.LinkId,
+                    Text = request.Text
+                };
+
+                var json = JsonSerializer.Serialize(commentRequest);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync("/comment", content);
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> ReactAsync(ReactionRequest request)
+        {
+            try
+            {
+                var (login, password) = GetCredentials();
+                var reactionRequest = new ReactionRequest
+                {
+                    Login = login,
+                    Password = password,
+                    LinkId = (long)request.LinkId,
+                    Reaction = request.Reaction
+                };
+
+                var json = JsonSerializer.Serialize(reactionRequest);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync("/react", content);
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<List<SearchResponse>> GetFavoritesAsync()
+        {
+            try
+            {
+                var (login, password) = GetCredentials();
+                var response = await _httpClient.GetAsync($"/favorites?login={login}&password={password}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonSerializer.Deserialize<List<SearchResponse>>(json) ?? new List<SearchResponse>();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting favorites: {ex.Message}");
+            }
+            return new List<SearchResponse>();
         }
     }
 }

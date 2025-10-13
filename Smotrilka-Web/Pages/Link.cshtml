@@ -1,0 +1,192 @@
+﻿@page
+@model Smotrilka_Web.Pages.LinkModel
+@{
+    ViewData["Title"] = Model.LinkInfo?.Name ?? "Ссылка не найдена";
+}
+
+@if (Model.LinkInfo == null)
+{
+    <div class="container">
+        <div class="error-message">
+            <h2>Ссылка не найдена</h2>
+            <p>Запрошенная ссылка не существует или была удалена.</p>
+            <a href="/" class="btn btn-primary">Вернуться на главную</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container">
+        <div class="link-header">
+            <div class="link-title-section">
+                <h1>@Model.LinkInfo.Name</h1>
+                <div class="link-actions">
+                    <button id="favoriteBtn" class="favorite-btn @(Model.LinkInfo.IsFavorite ? "favorited" : "")"
+                            data-link-id="@Model.LinkInfo.Id">
+                        @if (Model.LinkInfo.IsFavorite)
+                        {
+                            <span class="star">★</span>
+                            <span>В избранном</span>
+                        }
+                        else
+                        {
+                            <span class="star">☆</span>
+                            <span>Добавить в избранное</span>
+                        }
+                    </button>
+                    <a href="@Model.LinkInfo.Link" target="_blank" rel="noopener" class="btn btn-primary">
+                        📚 Перейти к контенту
+                    </a>
+                </div>
+            </div>
+
+            <div class="link-meta-info">
+                <div class="rating-section">
+                    <h3>Рейтинг</h3>
+                    <div class="rating-display">
+                        <span class="rating-value">@Model.LinkInfo.Rating</span>
+                        <div class="reaction-buttons">
+                            <button class="reaction-btn @(Model.LinkInfo.UserReaction == 1 ? "active" : "")"
+                                    data-reaction="1" data-link-id="@Model.LinkInfo.Id">
+                                👍
+                            </button>
+                            <button class="reaction-btn @(Model.LinkInfo.UserReaction == -1 ? "active" : "")"
+                                    data-reaction="-1" data-link-id="@Model.LinkInfo.Id">
+                                👎
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="creator-info">
+                    <h3>Автор публикации</h3>
+                    <span>@Model.LinkInfo.CreatorLogin</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stickers-section">
+            <h3>Теги и категории</h3>
+            <div class="stickers-container">
+                @foreach (var tag in Model.LinkInfo.Tags)
+                {
+                    <span class="sticker">@tag</span>
+                }
+            </div>
+        </div>
+
+        <div class="description-section">
+            <h3>Описание</h3>
+            <div class="markdown-content">
+                @Html.Raw(Model.DescriptionHtml)
+            </div>
+        </div>
+
+        <div class="comments-section">
+            <h3>Комментарии (@Model.LinkInfo.Comments.Count)</h3>
+
+            @if (Model.IsUserAuthenticated)
+            {
+                <div class="comment-form-container">
+                    <form id="commentForm" method="post">
+                        <input type="hidden" name="LinkId" value="@Model.LinkInfo.Id" />
+                        <div class="form-group">
+                            <label for="commentText">Добавить комментарий</label>
+                            <div class="comment-editor-tabs">
+                                <button type="button" class="tab-btn active" data-tab="write">Написать</button>
+                                <button type="button" class="tab-btn" data-tab="preview">Предпросмотр</button>
+                            </div>
+                            <textarea id="commentText" name="Text" class="form-control comment-textarea"
+                                      placeholder="Напишите ваш комментарий здесь... (поддерживается Markdown)"></textarea>
+                            <div id="commentPreview" class="comment-preview markdown-content" style="display: none;"></div>
+                            <span class="error-message" id="commentError"></span>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Опубликовать комментарий</button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div class="auth-prompt">
+                    <p>Чтобы оставить комментарий, пожалуйста, <a href="/Login">войдите в аккаунт</a>.</p>
+                </div>
+            }
+
+            <div class="comments-list">
+                @if (Model.LinkInfo.Comments.Any())
+                {
+                    @foreach (var comment in Model.LinkInfo.Comments)
+                    {
+                        <div class="comment">
+                            <div class="comment-header">
+                                <span class="comment-author">@comment.Author</span>
+                                <span class="comment-date">@comment.CreatedAt</span>
+                            </div>
+                            <div class="comment-content markdown-content">
+                                @Html.Raw(Markdig.Markdown.ToHtml(comment.Text ?? ""))
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-comments">
+                        <p>Пока нет комментариев. Будьте первым!</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/link-page.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация редактора комментариев
+            const commentTextarea = document.getElementById('commentText');
+            const commentPreview = document.getElementById('commentPreview');
+            const writeTab = document.querySelector('[data-tab="write"]');
+            const previewTab = document.querySelector('[data-tab="preview"]');
+
+            if (writeTab && previewTab) {
+                writeTab.addEventListener('click', function() {
+                    writeTab.classList.add('active');
+                    previewTab.classList.remove('active');
+                    commentTextarea.style.display = 'block';
+                    commentPreview.style.display = 'none';
+                });
+
+                previewTab.addEventListener('click', function() {
+                    previewTab.classList.add('active');
+                    writeTab.classList.remove('active');
+                    commentTextarea.style.display = 'none';
+                    commentPreview.style.display = 'block';
+                    updateCommentPreview();
+                });
+            }
+
+            function updateCommentPreview() {
+                if (commentTextarea && commentPreview) {
+                    const markdown = commentTextarea.value;
+                    // Простой Markdown парсер для предпросмотра
+                    let html = markdown
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                        .replace(/`([^`]+)`/g, '<code>$1</code>')
+                        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                        .replace(/\n/g, '<br>');
+
+                    commentPreview.innerHTML = html || '<em>Предпросмотр комментария...</em>';
+                }
+            }
+
+            if (commentTextarea) {
+                commentTextarea.addEventListener('input', updateCommentPreview);
+            }
+        });
+    </script>
+}

@@ -26,22 +26,21 @@ namespace Smotrilka_Web.Pages
 
             try
             {
-                // В реальном приложении здесь нужно получить userId из кук или базы данных
-                // Пока используем заглушку - нужно будет доработать после реализации пользователей на бэкенде
-                var userId = 1; // Заглушка
+                Favorites = await _apiService.GetFavoritesAsync();
 
-                // В текущем API нет прямого метода для получения избранного по userId
-                // Нужно доработать бэкенд или использовать другой подход
-                // Временно показываем сообщение о необходимости доработки
-                ErrorMessage = "Функционал избранного находится в разработке";
-
-                return Page();
+                if (Favorites == null)
+                {
+                    ErrorMessage = "Ошибка при загрузке избранного. Проверьте ваши учетные данные.";
+                    Favorites = new List<SearchResponse>();
+                }
             }
             catch (Exception ex)
             {
                 ErrorMessage = $"Ошибка при загрузке избранного: {ex.Message}";
-                return Page();
+                Favorites = new List<SearchResponse>();
             }
+
+            return Page();
         }
 
         public async Task<IActionResult> OnPostRemoveFavoriteAsync(int linkId)
@@ -61,13 +60,13 @@ namespace Smotrilka_Web.Pages
                 else
                 {
                     ErrorMessage = "Ошибка при удалении из избранного";
-                    return Page();
+                    return await OnGetAsync();
                 }
             }
             catch (Exception ex)
             {
                 ErrorMessage = $"Ошибка: {ex.Message}";
-                return Page();
+                return await OnGetAsync();
             }
         }
 

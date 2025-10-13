@@ -5,7 +5,10 @@
 }
 
 <div class="container">
-    <h2>Мои избранные ссылки</h2>
+    <div class="page-header">
+        <h1>Мои избранные материалы</h1>
+        <p class="page-subtitle">Здесь собраны все понравившиеся вам образовательные ресурсы</p>
+    </div>
 
     @if (Model.ErrorMessage != null)
     {
@@ -17,25 +20,38 @@
         {
             @foreach (var link in Model.Favorites)
             {
-                <div class="link-card">
-                    <h3><a href="/Link?id=@link.Id">@link.Name</a></h3>
+                <div class="link-card" id="favorite-@link.Id">
+                    <div class="card-header">
+                        <h3><a href="/Link?id=@link.Id">@link.Name</a></h3>
+                        <button class="btn btn-danger remove-favorite" data-link-id="@link.Id" title="Удалить из избранного">
+                            🗑️ Удалить
+                        </button>
+                    </div>
+
                     <div class="stickers-container">
                         @foreach (var tag in link.Tags)
                         {
                             <span class="sticker">@tag</span>
                         }
                     </div>
-                    <div class="rating">Рейтинг: @link.Rating</div>
-                    <a href="@link.Link" target="_blank" class="btn btn-secondary">Перейти к контенту</a>
-                    <button class="btn btn-danger remove-favorite" data-link-id="@link.Id">Удалить из избранного</button>
+
+                    <div class="link-meta">
+                        <span class="rating">⭐ Рейтинг: @link.Rating</span>
+                        <div class="card-actions">
+                            <a href="@link.Link" target="_blank" class="btn btn-secondary">📚 Перейти к контенту</a>
+                            <a href="/Link?id=@link.Id" class="btn btn-outline">💬 Комментарии</a>
+                        </div>
+                    </div>
                 </div>
             }
         }
         else
         {
             <div class="no-results">
-                <p>У вас пока нет избранных ссылок</p>
-                <a href="/" class="btn btn-primary">Найти интересные материалы</a>
+                <div class="no-results-icon">⭐</div>
+                <h3>Пока нет избранных материалов</h3>
+                <p>Находите интересные образовательные ресурсы и добавляйте их в избранное для быстрого доступа</p>
+                <a href="/" class="btn btn-primary">🔍 Найти материалы</a>
             </div>
         }
     </div>
@@ -48,6 +64,15 @@
             document.querySelectorAll('.remove-favorite').forEach(button => {
                 button.addEventListener('click', async function() {
                     const linkId = this.dataset.linkId;
+                    const card = document.getElementById(`favorite-${linkId}`);
+
+                    if (!confirm('Вы уверены, что хотите удалить эту ссылку из избранного?')) {
+                        return;
+                    }
+
+                    // Визуальная обратная связь
+                    this.disabled = true;
+                    this.textContent = 'Удаление...';
 
                     try {
                         const response = await fetch(`/favorites/remove?linkId=${linkId}`, {
@@ -55,23 +80,35 @@
                         });
 
                         if (response.ok) {
-                            this.closest('.link-card').remove();
+                            // Плавное удаление карточки
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateX(-100px)';
 
-                            // Если не осталось ссылок, показываем сообщение
-                            if (!document.querySelector('.link-card')) {
-                                document.getElementById('favoritesResults').innerHTML = `
-                                    <div class="no-results">
-                                        <p>У вас пока нет избранных ссылок</p>
-                                        <a href="/" class="btn btn-primary">Найти интересные материалы</a>
-                                    </div>
-                                `;
-                            }
+                            setTimeout(() => {
+                                card.remove();
+
+                                // Если не осталось ссылок, показываем сообщение
+                                if (!document.querySelector('.link-card')) {
+                                    document.getElementById('favoritesResults').innerHTML = `
+                                        <div class="no-results">
+                                            <div class="no-results-icon">⭐</div>
+                                            <h3>Пока нет избранных материалов</h3>
+                                            <p>Находите интересные образовательные ресурсы и добавляйте их в избранное для быстрого доступа</p>
+                                            <a href="/" class="btn btn-primary">🔍 Найти материалы</a>
+                                        </div>
+                                    `;
+                                }
+                            }, 300);
                         } else {
                             alert('Ошибка при удалении из избранного');
+                            this.disabled = false;
+                            this.textContent = '🗑️ Удалить';
                         }
                     } catch (error) {
                         console.error('Error:', error);
                         alert('Ошибка при удалении из избранного');
+                        this.disabled = false;
+                        this.textContent = '🗑️ Удалить';
                     }
                 });
             });
